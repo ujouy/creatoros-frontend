@@ -1,54 +1,64 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-function Dashboard({ setToken }) {
-  const [roadmap, setRoadmap] = useState(''); // State to hold the roadmap text
-  const [loading, setLoading] = useState(false); // State for loading indicator
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-  const handleLogout = () => {
-    setToken(null);
-    localStorage.removeItem('token');
-  };
+function Dashboard() {
+  const [roadmap, setRoadmap] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleConnectGoogle = () => {
     const token = localStorage.getItem('token');
-    window.location.href = `http://localhost:3000/api/integrations/google?token=${token}`;
+    window.location.href = `${API_URL}/api/integrations/google?token=${token}`;
   };
 
   const handleGenerateRoadmap = async () => {
     setLoading(true);
-    setRoadmap(''); // Clear previous roadmap
+    setRoadmap('');
+    setError('');
     try {
-        const token = localStorage.getItem('token');
-        const config = {
-            headers: { 'x-auth-token': token }
-        };
-        const res = await axios.get('http://localhost:3000/api/analysis/generate-roadmap', config);
-        setRoadmap(res.data.roadmap); // Set the roadmap in state instead of alerting
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: { 'x-auth-token': token }
+      };
+      const res = await axios.get(`${API_URL}/api/analysis/generate-roadmap`, config);
+      setRoadmap(res.data.roadmap);
     } catch (err) {
-        console.error(err);
-        alert('Error generating roadmap. Is your Google account connected?');
+      console.error(err);
+      setError('Error generating roadmap. Please ensure your Google account is connected and has a YouTube channel.');
     }
     setLoading(false);
   };
 
   return (
-    <div className="dashboard">
-      <h2>Dashboard</h2>
-      <p>Welcome! You are logged in.</p>
+    <div className="dashboard-content">
+      <header className="dashboard-header">
+        <h2>Dashboard</h2>
+        <p>Welcome! This is your control center.</p>
+      </header>
+
       <div className="dashboard-actions">
-        <button onClick={handleConnectGoogle}>1. Connect Google Account</button>
-        <button onClick={handleGenerateRoadmap} disabled={loading}>
-            {loading ? 'Generating...' : '2. Generate AI Roadmap'}
-        </button>
-        <button onClick={handleLogout} className="logout-btn">Logout</button>
+        <div className="action-card">
+            <h3>Step 1: Connect</h3>
+            <p>Allow CreatorOS to securely access your YouTube data.</p>
+            <button onClick={handleConnectGoogle}>Connect Google Account</button>
+        </div>
+        <div className="action-card">
+            <h3>Step 2: Analyze</h3>
+            <p>Generate your personalized growth roadmap using AI.</p>
+            <button onClick={handleGenerateRoadmap} disabled={loading}>
+                {loading ? 'Generating...' : 'Generate AI Roadmap'}
+            </button>
+        </div>
       </div>
 
-      {/* Conditionally render the roadmap results */}
+      {error && <div className="error-message">{error}</div>}
+
       {roadmap && (
         <div className="roadmap-results">
-            <h3>Your Personalized Roadmap</h3>
-            <pre>{roadmap}</pre>
+          <h3>Your Personalized Roadmap</h3>
+          <pre>{roadmap}</pre>
         </div>
       )}
     </div>

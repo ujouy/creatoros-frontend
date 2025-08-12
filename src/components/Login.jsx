@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -11,9 +13,8 @@ function Login() {
   const onSubmit = async e => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:3000/api/auth/login', formData);
+      const res = await axios.post(`${API_URL}/api/auth/login`, formData);
       localStorage.setItem('token', res.data.token);
-      // Instead of calling setToken, we'll navigate and let the App component re-render
       navigate('/');
       window.location.reload(); // Force a reload to ensure App component checks token
     } catch (err) {
