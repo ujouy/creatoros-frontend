@@ -3,49 +3,54 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-ro
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
+import LandingPage from './components/LandingPage';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import './App.css';
 
-// A new component for the main application layout after logging in
-const AppLayout = ({ token, setToken }) => (
+// New layout for the main authenticated app
+const AppLayout = () => (
   <div className="app-layout">
     <nav className="navbar">
       <div className="navbar-brand">
-        <Link to="/">CreatorOS Navigator</Link>
+        <Link to="/app/dashboard">CreatorOS</Link>
       </div>
       <div className="navbar-menu">
-        {/* You can add more links here later, like 'Settings' or 'Profile' */}
+        <Link to="/app/dashboard" className="nav-link">Dashboard</Link>
+        <Link to="/app/integrations" className="nav-link">Integrations</Link>
         <button onClick={() => {
-          setToken(null);
           localStorage.removeItem('token');
+          window.location.href = '/';
         }} className="logout-nav-btn">
           Logout
         </button>
       </div>
     </nav>
     <main className="main-content">
-      <Dashboard setToken={setToken} token={token} />
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        {/* Add a placeholder for the integrations page */}
+        <Route path="/integrations" element={<Dashboard />} /> 
+        <Route path="*" element={<Navigate to="/app/dashboard" />} />
+      </Routes>
     </main>
   </div>
 );
 
-// A new component for the authentication pages (Login/Register)
+// New layout for authentication pages
 const AuthLayout = () => (
-  <div className="auth-page">
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      {/* Redirect any other auth path to login */}
-      <Route path="*" element={<Navigate to="/login" />} />
-    </Routes>
-  </div>
+    <div className="auth-page-v2">
+        <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="*" element={<Navigate to="/auth/login" />} />
+        </Routes>
+    </div>
 );
-
 
 function App() {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // This useEffect hook now also handles setting the token for axios requests
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
@@ -62,12 +67,14 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          {/* If there is a token, render the main AppLayout. */}
-          {/* All routes inside AppLayout will be protected. */}
-          <Route path="/*" element={token ? <AppLayout token={token} setToken={setToken} /> : <Navigate to="/auth/login" />} />
-
-          {/* If there is no token, render the AuthLayout. */}
-          <Route path="/auth/*" element={!token ? <AuthLayout /> : <Navigate to="/" />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          
+          {/* Authenticated app routes under /app/* */}
+          <Route path="/app/*" element={token ? <AppLayout /> : <Navigate to="/auth/login" />} />
+          
+          {/* Auth routes under /auth/* */}
+          <Route path="/auth/*" element={!token ? <AuthLayout /> : <Navigate to="/app/dashboard" />} />
         </Routes>
       </div>
     </Router>
