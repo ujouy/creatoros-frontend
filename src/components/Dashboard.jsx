@@ -8,18 +8,33 @@ function Dashboard() {
   const [roadmap, setRoadmap] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [connections, setConnections] = useState({ youtube: false, twitter: false });
+  const [connections, setConnections] = useState({ youtube: false, x: false });
 
-  // In a real app, you'd fetch this status from the backend
-  // useEffect(() => { ... }, []);
+  // This useEffect hook now fetches the user's connection status when the component loads.
+  useEffect(() => {
+    const fetchConnectionStatus = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const config = { headers: { 'x-auth-token': token } };
+          const res = await axios.get(`${API_URL}/api/user/status`, config);
+          setConnections(res.data);
+        }
+      } catch (err) {
+        console.error("Could not fetch connection status:", err);
+      }
+    };
+
+    fetchConnectionStatus();
+  }, []); // The empty array ensures this runs only once on mount
 
   const handleConnect = (platform) => {
     const token = localStorage.getItem('token');
     let url = '';
     if (platform === 'youtube') {
       url = `${API_URL}/api/integrations/google?token=${token}`;
-    } else if (platform === 'twitter') {
-      url = `${API_URL}/api/integrations/twitter?token=${token}`;
+    } else if (platform === 'x') {
+      url = `${API_URL}/api/integrations/x?token=${token}`;
     } else {
       alert(`Integration for ${platform} is coming soon!`);
       return;
@@ -55,10 +70,10 @@ function Dashboard() {
               {connections.youtube ? 'Connected' : 'Connect'}
             </button>
           </li>
-          <li className={`integration-item ${connections.twitter ? 'connected' : ''}`}>
-            <span>X / Twitter</span>
-            <button onClick={() => handleConnect('twitter')} disabled={connections.twitter}>
-              {connections.twitter ? 'Connected' : 'Connect'}
+          <li className={`integration-item ${connections.x ? 'connected' : ''}`}>
+            <span>X</span>
+            <button onClick={() => handleConnect('x')} disabled={connections.x}>
+              {connections.x ? 'Connected' : 'Connect'}
             </button>
           </li>
           <li className="integration-item">
