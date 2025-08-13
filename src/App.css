@@ -183,13 +183,15 @@ button:disabled { background-color: #9ca3af; cursor: not-allowed; }
   font-size: 14px;
 }
 .logout-nav-btn:hover { background-color: var(--background-color); color: var(--secondary-color); }
+
+/* UPDATED MAIN CONTENT FOR CENTERING */
 .main-content {
   flex-grow: 1;
-  padding: 40px;
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
+  padding: 40px;
   box-sizing: border-box;
+  display: flex;
+  justify-content: center;
 }
 
 /* === DASHBOARD === */
@@ -197,6 +199,8 @@ button:disabled { background-color: #9ca3af; cursor: not-allowed; }
   display: grid;
   grid-template-columns: 300px 1fr;
   gap: 40px;
+  width: 100%;
+  max-width: 1200px; /* Constrain the max width */
 }
 .integrations-panel {
   background: var(--card-background);
