@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 
@@ -8,18 +8,23 @@ function Dashboard() {
   const [roadmap, setRoadmap] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [connections, setConnections] = useState({ youtube: false }); // Placeholder for connection status
+  const [connections, setConnections] = useState({ youtube: false, twitter: false });
 
-  // This would be expanded to fetch connection status from the backend
+  // In a real app, you'd fetch this status from the backend
   // useEffect(() => { ... }, []);
 
   const handleConnect = (platform) => {
     const token = localStorage.getItem('token');
+    let url = '';
     if (platform === 'youtube') {
-      window.location.href = `${API_URL}/api/integrations/google?token=${token}`;
+      url = `${API_URL}/api/integrations/google?token=${token}`;
+    } else if (platform === 'twitter') {
+      url = `${API_URL}/api/integrations/twitter?token=${token}`;
     } else {
       alert(`Integration for ${platform} is coming soon!`);
+      return;
     }
+    window.location.href = url;
   };
 
   const handleGenerateRoadmap = async () => {
@@ -33,7 +38,7 @@ function Dashboard() {
       setRoadmap(res.data.roadmap);
     } catch (err) {
       console.error(err);
-      setError('Error generating roadmap. Please ensure your Google account is connected and has a YouTube channel.');
+      setError('Error generating roadmap. Please ensure at least one social account is connected.');
     }
     setLoading(false);
   };
@@ -50,9 +55,11 @@ function Dashboard() {
               {connections.youtube ? 'Connected' : 'Connect'}
             </button>
           </li>
-          <li className="integration-item">
+          <li className={`integration-item ${connections.twitter ? 'connected' : ''}`}>
             <span>X / Twitter</span>
-            <button onClick={() => handleConnect('twitter')}>Connect</button>
+            <button onClick={() => handleConnect('twitter')} disabled={connections.twitter}>
+              {connections.twitter ? 'Connected' : 'Connect'}
+            </button>
           </li>
           <li className="integration-item">
             <span>Substack</span>
