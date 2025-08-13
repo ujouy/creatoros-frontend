@@ -5,10 +5,12 @@ import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import LandingPage from './components/LandingPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import NotificationContainer from './components/NotificationContainer';
+import { useNotification } from './hooks/useNotification';
 import './App.css';
 
 // New layout for the main authenticated app
-const AppLayout = () => (
+const AppLayout = ({ notifications, removeNotification }) => (
   <div className="app-layout">
     <nav className="navbar">
       <div className="navbar-brand">
@@ -33,23 +35,32 @@ const AppLayout = () => (
         <Route path="*" element={<Navigate to="/app/dashboard" />} />
       </Routes>
     </main>
+    <NotificationContainer 
+      notifications={notifications} 
+      removeNotification={removeNotification} 
+    />
   </div>
 );
 
 // New layout for authentication pages
-const AuthLayout = () => (
+const AuthLayout = ({ notifications, removeNotification }) => (
     <div className="auth-page-v2">
         <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="*" element={<Navigate to="/auth/login" />} />
         </Routes>
+        <NotificationContainer 
+          notifications={notifications} 
+          removeNotification={removeNotification} 
+        />
     </div>
 );
 
 function App() {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { notifications, removeNotification } = useNotification();
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -67,14 +78,36 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/" element={
+            <>
+              <LandingPage />
+              <NotificationContainer 
+                notifications={notifications} 
+                removeNotification={removeNotification} 
+              />
+            </>
+          } />
+          <Route path="/privacy" element={
+            <>
+              <PrivacyPolicy />
+              <NotificationContainer 
+                notifications={notifications} 
+                removeNotification={removeNotification} 
+              />
+            </>
+          } />
           
           {/* Authenticated app routes under /app/* */}
-          <Route path="/app/*" element={token ? <AppLayout /> : <Navigate to="/auth/login" />} />
+          <Route path="/app/*" element={token ? 
+            <AppLayout notifications={notifications} removeNotification={removeNotification} /> : 
+            <Navigate to="/auth/login" />
+          } />
           
           {/* Auth routes under /auth/* */}
-          <Route path="/auth/*" element={!token ? <AuthLayout /> : <Navigate to="/app/dashboard" />} />
+          <Route path="/auth/*" element={!token ? 
+            <AuthLayout notifications={notifications} removeNotification={removeNotification} /> : 
+            <Navigate to="/app/dashboard" />
+          } />
         </Routes>
       </div>
     </Router>
